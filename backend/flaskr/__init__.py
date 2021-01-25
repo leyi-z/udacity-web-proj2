@@ -19,6 +19,11 @@ def paginate(request, selection):
     return current_items
 
 
+# run with
+# $ export FLASK_APP=flaskr
+# $ export FLASK_ENV=development
+# $ flask run
+
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -61,13 +66,16 @@ def create_app(test_config=None):
     ########
     @app.route('/categories')
     def all_categories():
-        categories = Category.query.order_by(Category.id).all()
-        categories = [category.format() for category in categories]
-        return jsonify({
-            'success': True,
-            'categories': categories,
-            'total_num': len(categories)
-        })
+        try:
+            categories = Category.query.order_by(Category.id).all()
+            categories = [category.format() for category in categories]    
+            return jsonify({
+                'success': True,
+                'categories': categories,
+                'total_num': len(categories)
+            })
+        except:
+            abort(404)
     # to check:
     # $ curl http://127.0.0.1:5000/categories
 
@@ -86,13 +94,16 @@ def create_app(test_config=None):
     ########
     @app.route('/questions')
     def all_questions():
-        questions = Question.query.order_by(Question.id).all()
-        current_questions = paginate(request, questions)
-        return jsonify({
-            'success': True,
-            'current_questions': current_questions,
-            'total_num': len(questions)
-        })
+        try:
+            questions = Question.query.order_by(Question.id).all()
+            current_questions = paginate(request, questions)
+            return jsonify({
+                'success': True,
+                'current_questions': current_questions,
+                'total_num': len(questions)
+            })
+        except:
+            abort(404)
     # to check:
     # $ curl http://127.0.0.1:5000/questions
     
@@ -106,16 +117,21 @@ def create_app(test_config=None):
     ########
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
-        question = Question.query.filter(Question.id==question_id).one_or_none()
-        question.delete()
-        questions = Question.query.order_by(Question.id).all()
-        current_questions = paginate(request, questions)
-        return jsonify({
-            'success': True,
-            'deleted': question_id,
-            'current_questions': current_questions,
-            'total_num': len(questions)
-        })
+        try:
+            question = Question.query.filter(Question.id==question_id).one_or_none()
+            if question is None:
+                abort(404)
+            question.delete()
+            questions = Question.query.order_by(Question.id).all()
+            current_questions = paginate(request, questions)
+            return jsonify({
+                'success': True,
+                'deleted': question_id,
+                'current_questions': current_questions,
+                'total_num': len(questions)
+            })
+        except:
+            abort(422)
     # to check:
     # $ curl -X DELETE http://127.0.0.1:5000/questions/<question_id>
     
@@ -137,23 +153,26 @@ def create_app(test_config=None):
         new_answer = body.get('answer', None)
         new_difficulty = body.get('difficulty', None)
         new_category = body.get('category', None)
-        question = Question(
-            question=new_question,
-            answer=new_answer,
-            difficulty=new_difficulty,
-            category=new_category
-        )
-        question.insert()
-        questions = Question.query.order_by(Question.id).all()
-        current_questions = paginate(request, questions)
-        return jsonify({
-            'success': True,
-            'added': question.id,
-            'current_questions': current_questions,
-            'total_num': len(questions)
-        })
+        try:
+            question = Question(
+                question=new_question,
+                answer=new_answer,
+                difficulty=new_difficulty,
+                category=new_category
+            )
+            question.insert()
+            questions = Question.query.order_by(Question.id).all()
+            current_questions = paginate(request, questions)
+            return jsonify({
+                'success': True,
+                'added': question.id,
+                'current_questions': current_questions,
+                'total_num': len(questions)
+            })
+        except:
+            abort(422)
     # to check:
-    # $ curl -X POST -H "Content-Type: application/json" -d '{"question":"who is the cutest thing", "answer":"thig", "difficulty":"1", "category": "3"}' http://127.0.0.1:5000/questions
+    # $ curl -X POST -H "Content-Type: application/json" -d '{"question":"who is the biggest bleh", "answer":"thog", "difficulty":"2", "category": "3"}' http://127.0.0.1:5000/questions
         
     
 
@@ -166,6 +185,24 @@ def create_app(test_config=None):
     # only question that include that string within their question.
     # Try using the word "title" to start.
     ########
+    @app.route('/questions/search_result', methods=['POST'])
+    def search_question():
+        body = request.get_json()
+        search = body.get('search', None)
+        try:
+            questions = Question.query.order_by(Question.id) \
+                .filter(Question.question.ilike('%{}%'.format(search))).all()
+            current_questions = paginate(request, questions)
+            return jsonify({
+                'success': True,
+                'search_input': search,
+                'current_questions': current_questions,
+                'total_num': len(questions)
+            })
+        except:
+            abort(400)
+    # to check:
+    # $ curl -X POST -H "Content-Type: application/json" -d '{"search":"thing"}' http://127.0.0.1:5000/questions/search_result
     
 
     ##TODO##
@@ -177,15 +214,22 @@ def create_app(test_config=None):
     ########
     @app.route('/categories/<int:category_id>')
     def one_category(category_id):
-        category = Category.query.filter(Category.id==category_id).one_or_none()
-        questions = Question.query.filter(Question.category==category_id).order_by(Question.id).all()
-        current_questions = paginate(request, questions)
-        return jsonify({
-            'success': True,
-            'category': category.type,
-            'current_questions': current_questions,
-            'total_num': len(questions)
-        })
+        try:
+            category = Category.query.filter(Category.id==category_id).one_or_none()
+            questions = Question.query.filter(Question.category==category_id) \
+                .order_by(Question.id).all()
+            current_questions = paginate(request, questions)
+            if category is None:
+                abort(404)
+            else:
+                return jsonify({
+                    'success': True,
+                    'category': category.type,
+                    'current_questions': current_questions,
+                    'total_num': len(questions)
+                })
+        except:
+            abort(400)
     # to check:
     # $ curl http://127.0.0.1:5000/categories/<category_id>
     
