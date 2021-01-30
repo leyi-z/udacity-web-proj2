@@ -58,11 +58,16 @@ def create_app(test_config=None):
     
     
     ########
-    # a placeholder homepage
+    # placeholder endpoints
     ########
     @app.route('/')
     def homepage():
         return jsonify({})
+        
+    @app.route('/add')
+    def add_page():
+        return jsonify({})
+    
     
 
 
@@ -74,7 +79,7 @@ def create_app(test_config=None):
     def all_categories():
         try:
             categories = Category.query.order_by(Category.id).all()
-            categories = [category.format() for category in categories]    
+            categories = [category.format() for category in categories]
             return jsonify({
                 'success': True,
                 'categories': categories,
@@ -109,7 +114,6 @@ def create_app(test_config=None):
                 'questions': current_questions,
                 'total_questions': len(questions),
                 'categories': categories,
-                #'current_category': 1
             })
         except:
             abort(404)
@@ -138,8 +142,7 @@ def create_app(test_config=None):
                 'success': True,
                 'id': question.id,
                 'questions': current_questions,
-                'total_questions': len(questions),
-                'categories': categories,
+                'total_questions': len(questions)
             })
         except:
             abort(422)
@@ -172,13 +175,16 @@ def create_app(test_config=None):
                 category=new_category
             )
             question.insert()
-            questions = Question.query.order_by(Question.id).all()
-            current_questions = paginate(request, questions)
+            # questions = Question.query.order_by(Question.id).all()
+#             current_questions = paginate(request, questions)
+#             categories = Category.query.order_by(Category.id).all()
+#             categories = [category.format() for category in categories]
             return jsonify({
                 'success': True,
                 'id': question.id,
-                'questions': current_questions,
-                'total_questions': len(questions)
+                # 'questions': current_questions,
+#                 'total_questions': len(questions),
+#                 'categories': categories
             })
         except:
             abort(422)
@@ -227,20 +233,17 @@ def create_app(test_config=None):
         try:
             categories = Category.query.order_by(Category.id).all()
             categories = [category.format() for category in categories]
-            category = categories[category_id]
+            category = categories[category_id-1]
             questions = Question.query.filter(Question.category==category_id) \
                 .order_by(Question.id).all()
             current_questions = paginate(request, questions)
-            if category is None:
-                abort(404)
-            else:
-                return jsonify({
-                    'success': True,
-                    'questions': current_questions,
-                    'total_questions': len(questions),
-                    'categories': categories,
-                    'current_category': category
-                })
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(questions),
+                'categories': categories,
+                'current_category': category
+            })
         except:
             abort(400)
     # to check:

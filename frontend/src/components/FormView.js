@@ -50,6 +50,7 @@ class FormView extends Component {
       crossDomain: true,
       success: (result) => {
         document.getElementById("add-question-form").reset();
+		window.alert('New question added!')
         return;
       },
       error: (error) => {
@@ -91,7 +92,7 @@ class FormView extends Component {
             <select name="category" onChange={this.handleChange}>
               {Object.keys(this.state.categories).map(id => {
                   return (
-                    <option key={id} value={id}>{this.state.categories[id]}</option>
+                    <option key={id} value={id}>{this.state.categories[id]['type']}</option>
                   )
                 })}
             </select>
