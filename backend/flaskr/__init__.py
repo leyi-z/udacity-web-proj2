@@ -100,7 +100,7 @@ def create_app(test_config=None):
     @app.route('/questions', methods=['GET'])
     def all_questions():
         try:
-            questions = Question.query.join(Category, Question.category==Category.id).order_by(Question.id).all()
+            questions = Question.query.order_by(Question.id).all()
             current_questions = paginate(request, questions)
             categories = Category.query.order_by(Category.id).all()
             categories = [category.format() for category in categories]
@@ -130,12 +130,13 @@ def create_app(test_config=None):
             question = Question.query.filter(Question.id==question_id).one_or_none()
             if question is None:
                 abort(404)
-            question.delete()
+            else:
+                question.delete()
             questions = Question.query.order_by(Question.id).all()
             current_questions = paginate(request, questions)
             return jsonify({
                 'success': True,
-                'id': question_id,
+                'id': question.id,
                 'questions': current_questions,
                 'total_questions': len(questions),
                 'categories': categories,
