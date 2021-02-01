@@ -2,14 +2,25 @@
 
 
 
+
 ### Getting Started
+
 
 #### Database Info
 
 The local database I used was named `db_proj2` with owner `leyi_psql` and no password. You might want to adjust the `models.py` file for the project to run on your computer. If you want to use the `trivia.psql` file to populate the database, make sure to change the owner in it.
 
 
-#### NPM Stuff
+#### Backend
+
+Before running anything, make sure that you have enerything specified in `requirements.txt` located in the backend directory. Then you can run the backend with the command:
+```
+$ export FLASK_APP=flaskr
+$ export FLASK_ENV=development
+$ flask run
+```
+
+#### Frontend
 
 The frontend is run with npm. The `node_modules` file is needed, but I did not include it in the git repository since it's a huge file. In order to run the frontend, you wiil need to run the following command in the frontend directory:
 ```
@@ -19,6 +30,8 @@ Then run the frontend with
 ```
 $ npm start
 ```
+
+
 
 
 ### Error Handling
@@ -39,7 +52,9 @@ The API will return four error types when requests fail:
 
 
 
+
 ### Endpoints
+
 
 #### GET `/`, `/add`, `/play`
 
