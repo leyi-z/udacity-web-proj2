@@ -66,7 +66,7 @@ class QuizView extends Component {
           previousQuestions: previousQuestions,
           currentQuestion: result.question,
           guess: '',
-          forceEnd: result.question ? false : true
+		  forceEnd: result.question ? false : true
         })
         return;
       },
@@ -111,8 +111,8 @@ class QuizView extends Component {
                       key={id}
                       value={id}
                       className="play-category"
-                      onClick={() => this.selectCategory({type:this.state.categories[id], id})}>
-                      {this.state.categories[id]}
+                      onClick={() => this.selectCategory({type:this.state.categories[id]['type'], id:parseInt(id)+1})}>
+                      {this.state.categories[id]['type']}
                     </div>
                   )
                 })}
@@ -162,6 +162,7 @@ class QuizView extends Component {
               <input className="submit-guess button" type="submit" value="Submit Answer" />
             </form>
           </div>
+		  
         )
   }
 

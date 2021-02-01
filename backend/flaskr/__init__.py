@@ -36,6 +36,11 @@ def create_app(test_config=None):
     ########
     CORS(app)
 
+
+
+    ##TODO##
+    # Use the after_request decorator to set Access-Control-Allow
+    ########
     @app.after_request
     def after_request(response):
         response.headers.add(
@@ -47,13 +52,6 @@ def create_app(test_config=None):
             'GET, POST, PATCH, DELETE, OPTIONS'
             )
         return response
-
-
-
-    ##TODO##
-    # Use the after_request decorator to set Access-Control-Allow
-    ########
-    
     
     
     
@@ -67,9 +65,12 @@ def create_app(test_config=None):
     @app.route('/add')
     def add_page():
         return jsonify({})
+        
+    @app.route('/play')
+    def play_page():
+        return jsonify({})
     
     
-
 
     ##TODO##
     # Create an endpoint to handle GET requests 
@@ -175,16 +176,9 @@ def create_app(test_config=None):
                 category=new_category
             )
             question.insert()
-            # questions = Question.query.order_by(Question.id).all()
-#             current_questions = paginate(request, questions)
-#             categories = Category.query.order_by(Category.id).all()
-#             categories = [category.format() for category in categories]
             return jsonify({
                 'success': True,
                 'id': question.id,
-                # 'questions': current_questions,
-#                 'total_questions': len(questions),
-#                 'categories': categories
             })
         except:
             abort(422)
@@ -205,7 +199,7 @@ def create_app(test_config=None):
     @app.route('/questions/search_result', methods=['POST'])
     def search_question():
         body = request.get_json()
-        search = body.get('searchTerm', None)
+        search = body.get('search', None)
         try:
             questions = Question.query.order_by(Question.id) \
                 .filter(Question.question.ilike('%{}%'.format(search))).all()
@@ -218,8 +212,9 @@ def create_app(test_config=None):
         except:
             abort(400)
     # to check:
-    # $ curl -X POST -H "Content-Type: application/json" -d '{"search":"thing"}' http://127.0.0.1:5000/questions/search_result
+    # $ curl -X POST -H "Content-Type: application/json" -d '{"search":"What"}' http://127.0.0.1:5000/questions/search_result
     
+
 
     ##TODO##
     # Create a GET endpoint to get questions based on category.
@@ -261,8 +256,37 @@ def create_app(test_config=None):
     # one question at a time is displayed, the user is allowed to answer
     # and shown whether they were correct or not.
     ########
-
-
+    @app.route('/quizzes', methods=['POST'])
+    def show_quiz():
+        body = request.get_json()
+        previous_questions = body.get('previous_questions', None)
+        quiz_category = body.get('quiz_category', None)
+        quiz_category_id = quiz_category.get('id', None)
+        if quiz_category_id == 0:
+            questions = Question.query.order_by(Question.id).all()
+        else:
+            questions = Question.query \
+                .filter(Question.category==quiz_category_id).order_by(Question.id).all()    
+        random_question = random.choice(questions)
+        if len(previous_questions)<len(questions):
+            while random_question.id in previous_questions:
+                random_question = random.choice(questions)
+            else:
+                current_question = random_question.format()
+            return jsonify({
+                'success': True,
+                'forceEnd': False,
+                'previousQuestions': previous_questions,
+                'question': current_question
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'forceEnd': True,
+                'previousQuestions': previous_questions
+            })
+            
+            
 
     ##TODO##
     # Create error handlers for all expected errors
