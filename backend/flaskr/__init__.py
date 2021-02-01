@@ -195,7 +195,6 @@ def create_app(test_config=None):
     def search_question():
         body = request.get_json()
         search = body.get('searchTerm', None)
-        print(search)
         try:
             questions = Question.query.order_by(Question.id) \
                 .filter(Question.question.ilike('%{}%'.format(search))).all()
@@ -266,6 +265,7 @@ def create_app(test_config=None):
             previous_questions = body.get('previous_questions', None)
             quiz_category = body.get('quiz_category', None)
             quiz_category_id = quiz_category.get('id', None)
+            
             if quiz_category_id == 0:
                 questions = Question.query.order_by(Question.id).all()
             else:
